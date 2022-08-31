@@ -16,6 +16,7 @@ mixer.init()
 #sound = mixer.Sound("")
 #face_cascade = cv2.CascadeClassifier('D:\\Data\\work\\haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('D:\\Data\\work\\haarcascade_eye.xml')
+faceCascade =cv2.CascadeClassifier(r'D:\\works\\detector\\haarcascade_frontalface_default.xml') 
 """
 Loading opencv haarcascade to dectects eyes
 """
@@ -48,9 +49,6 @@ while True:
         # preprocessing steps
         eye_color = frame[ey:ey+eh,ex:ex+ew]
         eye_gray = gray[ey:ey+eh,ex:ex+ew]
-        cv2.imwrite('temp.jpg',eye_gray)
-        # test = cv2.imread('temp.jpg',0)
-        # test = cv2.resize(test, (224,224))
         eyes_new = eye_cascade.detectMultiScale(eye_gray)
         if len(eyes_new) == 0:
             print('No eyes dectected')
@@ -61,43 +59,20 @@ while True:
                 final_img = final_img/255.0
                 final_img = np.expand_dims(final_img,axis=0)
                 prediction = model.predict(final_img)
+                if (prediction>0):
+                    status = "Open Eyes"
+                else:
+                    status = "Closed Eyes"
 
-                if prediction > 0:
-                    cv2.putText(frame,'open',(10,height-30),fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,fontScale=1,color=(255,255,255),
-                       thickness=1,lineType=cv2.LINE_AA)
-                    cv2.putText(frame,'Score'+str(Score),(100,height-30),fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,fontScale=1,color=(255,255,255),
-                       thickness=1,lineType=cv2.LINE_AA)
-                    Score=Score+1
-            """
-               Predicting the outcome of the model based on the score for closed eyes
-            """
-            if(Score>15):
-                pass    
-        # if eyes are open
-            else:
-                cv2.putText(frame,'close',(10,height-10),fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,fontScale=1,color=(255,255,255),
-                       thickness=1,lineType=cv2.LINE_AA)      
-                cv2.putText(frame,'Score'+str(Score),(100,height-10),fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,fontScale=1,color=(255,255,255),
-                       thickness=1,lineType=cv2.LINE_AA)
-                Score = Score-1
-            """
-               Predicting the outcome of the model based on the score for open eyes
-            """
-            if (Score<0):
-                Score=0
-
-        """
-        Preprocessing the the eyes frames before giving it to the model for prediction
-        """
-        # preprocessing is done now model prediction
-                
-        
-        # # if eyes are closed
-        
-    
-    cv2.imshow('frame',frame)
-    if cv2.waitKey(20) & 0xFF==ord('q'):
-        break
-        
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                print(faceCascade.empty())
+  
+                for (x, y, w, h) in face: 
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    cv2.putText(frame, status, (20,20), font, 1, (0, 255, 255), 2, cv2.LINE_4)
+                cv2.imshow('frame', frame)
+  
+    if cv2.waitKey(20) & 0xFF == ord('q'):
+        break       
 cap.release()
 cv2.destroyAllWindows()
